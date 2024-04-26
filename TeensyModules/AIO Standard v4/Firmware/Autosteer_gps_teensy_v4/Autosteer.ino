@@ -398,7 +398,9 @@ void autosteerLoop()
     }
 
     //DETERMINE ACTUAL STEERING POSITION
-
+    if(useBNOWAS && steerSettings.steerSensorCounts==10)
+      steeringPosition = imuSteerPosition;
+      
     //convert position to steer angle. 32 counts per degree of steer pot position in my case
     //  ***** make sure that negative steer angle makes a left turn and positive value is a right turn *****
     if (steerConfig.InvertWAS)

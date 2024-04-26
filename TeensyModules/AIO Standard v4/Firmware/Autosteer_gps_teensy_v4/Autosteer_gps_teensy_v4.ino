@@ -138,6 +138,12 @@ bool dualReadyRelPos = false;
 bool useCMPS = false;
 bool useBNO08x = false;
 
+// IMU WAS
+bool useBNOWAS = false;
+float yawSteer; // IMU yaw before converting to steer angle
+float imuSteerPosition=0.0; // Steer angle *10
+float alpha = 0.98; // Smoothing factor for the low-pass filter
+
 //CMPS always x60
 #define CMPS14_ADDRESS 0x60
 
@@ -316,7 +322,11 @@ void setup()
 
                   // Use gameRotationVector and set REPORT_INTERVAL
                   bno08x.enableGameRotationVector(REPORT_INTERVAL);
-                  useBNO08x = true;
+                  if(bno08xAddress == bno08xAddresses[0])
+                    useBNO08x = true;
+
+                  if(bno08xAddress == bno08xAddresses[1])
+                    useBNOWAS = true;
               }
               else
               {
@@ -330,7 +340,7 @@ void setup()
               Serial.print(bno08xAddress, HEX);
               Serial.println(" BNO08X not Connected or Found");
           }
-          if (useBNO08x) break;
+          //if (useBNO08x) break;
       }
   }
 
@@ -339,6 +349,8 @@ void setup()
   Serial.println(useCMPS);
   Serial.print("useBNO08x = ");
   Serial.println(useBNO08x);
+  Serial.print("useBNOWAS = ");
+  Serial.println(useBNOWAS);
 
   Serial.println("\r\nEnd setup, waiting for GPS...\r\n");
 }
@@ -658,6 +670,7 @@ void loop()
     {
       READ_BNO_TIME = systick_millis_count;
       readBNO();
+      BNOSteerAngle();
     }
     
     if (Autosteer_running) autosteerLoop();

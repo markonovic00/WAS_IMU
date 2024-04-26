@@ -245,6 +245,8 @@ public:
 	void sendCommand(uint8_t command);
 	void sendCalibrateCommand(uint8_t thingToCalibrate);
 
+  void setAddress(uint8_t bnoAddress);
+
 	//Metadata functions
 	int16_t getQ1(uint16_t recordID);
 	int16_t getQ2(uint16_t recordID);

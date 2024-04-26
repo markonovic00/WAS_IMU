@@ -462,6 +462,11 @@ float BNO080::getPitch()
 	return (pitch);
 }
 
+void BNO080::setAddress(uint8_t bnoAddress)
+{
+  _deviceAddress = bnoAddress;
+}
+
 // Return the yaw / heading (rotation around the z-axis) in Radians
 float BNO080::getYaw()
 {

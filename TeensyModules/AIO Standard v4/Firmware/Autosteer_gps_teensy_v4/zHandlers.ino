@@ -99,10 +99,51 @@ void GGA_Handler() //Rec'd GGA
     gpsReadyTime = systick_millis_count;    //Used for GGA timeout (LED's ETC) 
 }
 
+void BNOSteerAngle()
+{
+  if(bno08x.dataAvailable() == true)
+  {
+    bno08x.setAddress(0x4B);
+    float dqx, dqy, dqz, dqw, dacr;
+    uint8_t dac;
+
+    //get quaternion
+    bno08x.getQuat(dqx, dqy, dqz, dqw, dacr, dac);
+
+    float norm = sqrt(dqw * dqw + dqx * dqx + dqy * dqy + dqz * dqz);
+    dqw = dqw / norm;
+    dqx = dqx / norm;
+    dqy = dqy / norm;
+    dqz = dqz / norm;
+
+    float ysqr = dqy * dqy;
+
+    // yaw (z-axis rotation)
+    float t3 = +2.0 * (dqw * dqz + dqx * dqy);
+    float t4 = +1.0 - 2.0 * (ysqr + dqz * dqz);
+    float yawSteerNew = atan2(t3, t4);
+
+    yawSteer = alpha * yawSteer + (1 - alpha) * yawSteerNew; // Apply low-pass filter
+
+    // Convert yaw to degrees x10
+    correctionHeading = -yawSteer;
+    yawSteer = (int16_t)((yawSteer * -RAD_TO_DEG_X_10));
+    if (yawSteer < 0) yawSteer += 3600;
+
+    imuSteerPosition = yaw - yawSteer;
+
+    if(imuSteerPosition > 1800)
+      imuSteerPosition -=3600;
+    else if(imuSteerPosition < -1800)
+      imuSteerPosition +=3600;
+  }
+}
+
 void readBNO()
 {
           if (bno08x.dataAvailable() == true)
         {
+            bno08x.setAddress(0x4A);
             float dqx, dqy, dqz, dqw, dacr;
             uint8_t dac;
 
