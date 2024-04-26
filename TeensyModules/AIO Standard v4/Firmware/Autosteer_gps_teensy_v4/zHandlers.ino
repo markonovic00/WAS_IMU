@@ -139,6 +139,63 @@ void BNOSteerAngle()
   }
 }
 
+void BNOSteerAngleFusion()
+{
+  if(bno08x.dataAvailable() == true)
+  {
+    float gx,gy,gz,
+          ax,ay,az,
+          mx,my,mz;
+    uint8_t acc;
+    bno08x.setAddress(0x4B);
+    // Gyroscope needs to be converted from Rad/s to Degree/s
+    // the rest are not unit-important
+    bno08x.getGyro(gx,gy,gz,acc);
+    gx = gx * RAD_TO_DEG_WAS;
+    gy = gy * RAD_TO_DEG_WAS;
+    gz = gz * RAD_TO_DEG_WAS;
+
+    bno08x.getAccel(ax,ay,az,acc);
+    bno08x.getMag(mx,my,mz,acc);
+    // Update the SensorFusion filter
+    WASFilter.update(gx, gy, gz, 
+                  ax, ay, az, 
+                  mx, my, mz);
+
+    float dqx, dqy, dqz, dqw;
+
+    //get quaternion
+    WASFilter.getQuaternion(&dqw ,&dqx, &dqy, &dqz);
+
+    float norm = sqrt(dqw * dqw + dqx * dqx + dqy * dqy + dqz * dqz);
+    dqw = dqw / norm;
+    dqx = dqx / norm;
+    dqy = dqy / norm;
+    dqz = dqz / norm;
+
+    float ysqr = dqy * dqy;
+
+    // yaw (z-axis rotation)
+    float t3 = +2.0 * (dqw * dqz + dqx * dqy);
+    float t4 = +1.0 - 2.0 * (ysqr + dqz * dqz);
+    float yawSteerNew = atan2(t3, t4);
+
+    yawSteer = alpha * yawSteer + (1 - alpha) * yawSteerNew; // Apply low-pass filter
+
+    // Convert yaw to degrees x10
+    correctionHeading = -yawSteer;
+    yawSteer = (int16_t)((yawSteer * -RAD_TO_DEG_X_10));
+    if (yawSteer < 0) yawSteer += 3600;
+
+    imuSteerPosition = yaw - yawSteer;
+
+    if(imuSteerPosition > 1800)
+      imuSteerPosition -=3600;
+    else if(imuSteerPosition < -1800)
+      imuSteerPosition +=3600;
+  }
+}
+
 void readBNO()
 {
           if (bno08x.dataAvailable() == true)

@@ -54,6 +54,8 @@ ADS1115_lite adc(ADS1115_DEFAULT_ADDRESS);     // Use this for the 16-bit versio
 #include <IPAddress.h>
 #include "BNO08x_AOG.h"
 
+#include "Adafruit_AHRS.h"
+
 #ifdef ARDUINO_TEENSY41
 // ethernet
 #include <NativeEthernet.h>
