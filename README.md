@@ -1,3 +1,9 @@
+# This is a variation of the original
+In this code there is an option to use another IMU as a WAS.
+
+Need to implement:
+Madgwicks filter on the IMU. 
+
 # AgOpenGPS Hardware and Firmware Repository
 
 Click on the green "Code" button above and select "Download Zip" to download the entire support folder.
